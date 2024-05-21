@@ -1,0 +1,21 @@
+server:
+  port: 5000
+spring:
+  application:
+    name: tracker
+  datasource:
+    url: jdbc:postgresql://localhost:5432/application_tracker_db
+    username: postgres
+    password: PGsang!t234
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+        format_sql: true
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+logging:
+  level:
+    org.springframework.security: TRACE

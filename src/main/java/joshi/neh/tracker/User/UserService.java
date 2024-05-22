@@ -30,6 +30,9 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private JwtService jwtService;
+
     public User convertToUserEntity(UserDto dto) {
         return User.builder()
                 .email(dto.email())
@@ -53,7 +56,7 @@ public class UserService {
         UserResponseDto responseDto = new UserResponseDto(
                 newUser.getUserId(),
                 newUser.getEmail(),
-                JwtService.generateToken(newUser)
+                jwtService.generateToken(newUser)
         );
         return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
     }
@@ -73,7 +76,7 @@ public class UserService {
         //Get user details for generating a token
         User user = this.userRepository.findByEmail(userDto.email()).get();
         //We don't have to check if user is present, coz the method above will already check that
-        String accessToken = JwtService.generateToken(user);
+        String accessToken = jwtService.generateToken(user);
         UserResponseDto responseDto = new UserResponseDto(
                 user.getUserId(),
                 user.getEmail(),

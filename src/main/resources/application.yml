@@ -4,9 +4,9 @@ spring:
   application:
     name: tracker
   datasource:
-    url: jdbc:postgresql://localhost:5432/application_tracker_db
-    username: postgres
-    password: PGsang!t234
+    url: ${DB_URI}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -19,3 +19,5 @@ spring:
 logging:
   level:
     org.springframework.security: TRACE
+SECRETS:
+  JWT_SECRET: ${JWT_SECRET}

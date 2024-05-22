@@ -2,6 +2,8 @@ package joshi.neh.tracker.Application;
 
 import joshi.neh.tracker.User.User;
 import joshi.neh.tracker.User.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,6 +25,8 @@ public class ApplicationService {
 
     @Autowired
     private UserService userService;
+
+    private static final Logger logger = LoggerFactory.getLogger(ApplicationService.class);
 
     public Application convertToEntity(User user, ApplicationDto dto) {
         return Application.builder()
@@ -53,9 +57,12 @@ public class ApplicationService {
         return new ResponseEntity<>(convertToResponse(newApp), HttpStatus.CREATED);
     }
 
+    @Transactional
     public ResponseEntity<?> getAllApplicationsOfUser(UUID id) {
         Pageable query50Applications = PageRequest.of(0,50, Sort.by("date_applied").reverse());
+        logger.info("Request received in application service!!!");
         List<Application> applications = this.applicationRepository.findAllApplicationsOfUser(id, query50Applications).getContent();
+        logger.info("FOUND ALL APPLICATIONS");
         if (applications.isEmpty()){
             return new ResponseEntity<>("No applications yet. Start applying now!", HttpStatus.OK);
         }

@@ -19,12 +19,12 @@ public class UserController {
         return "Hello World!";
     }
 
-    @PostMapping("/register")
+    @PostMapping("/auth/register")
     public ResponseEntity<UserResponseDto> saveUser(@RequestBody UserDto userDto) {
         return this.userService.saveUser(userDto);
     }
 
-    @PostMapping("/login")
+    @PostMapping("/auth/login")
     public ResponseEntity<UserResponseDto> login(@RequestBody UserDto userDto) throws IncorrectCredentialsException {
         return this.userService.login(userDto);
     }

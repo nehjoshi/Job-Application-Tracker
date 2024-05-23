@@ -2,6 +2,7 @@ package joshi.neh.tracker.Application;
 
 import joshi.neh.tracker.User.User;
 import joshi.neh.tracker.User.UserService;
+import joshi.neh.tracker.exceptions.ApplicationNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -25,6 +27,7 @@ public class ApplicationService {
 
     @Autowired
     private UserService userService;
+
 
     private static final Logger logger = LoggerFactory.getLogger(ApplicationService.class);
 
@@ -70,4 +73,21 @@ public class ApplicationService {
 
     }
 
+    @Transactional
+    public ResponseEntity<Application> updateApplicationById(Long applicationId, ApplicationDto dto) {
+        Optional<Application> application = this.applicationRepository.findById(applicationId);
+
+        if (application.isEmpty()) throw new ApplicationNotFoundException("Application with ID " + applicationId + " not found");
+
+        Application app = application.get();
+        app.setStatus(dto.status() != null ? dto.status() : app.getStatus());
+        app.setCompanyName(dto.companyName() != null ? dto.companyName() : app.getCompanyName());
+        app.setLocation(dto.location() != null ? dto.location() : app.getLocation());
+        app.setCompensation(dto.compensation() != null ? dto.compensation() : app.getCompensation());
+        app.setAdditionalInfo(dto.additionalInfo() != null ? dto.additionalInfo() : app.getAdditionalInfo());
+        this.applicationRepository.save(app);
+        logger.info("UPDATED APPLICATION: ");
+        logger.info(String.valueOf(app));
+        return new ResponseEntity<>(app, HttpStatus.CREATED);
+    }
 }

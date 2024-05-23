@@ -26,4 +26,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<?> handleIncorrectCredentialsException(IncorrectCredentialsException exception) {
         return new ResponseEntity<>(exception.getMessage(), HttpStatus.UNAUTHORIZED);
     }
+
+    @ExceptionHandler(ApplicationNotFoundException.class)
+    public ResponseEntity<?> handleApplicationNotFoundException(ApplicationNotFoundException exception) {
+        return new ResponseEntity<>(exception.getMessage(), HttpStatus.NOT_FOUND);
+    }
 }

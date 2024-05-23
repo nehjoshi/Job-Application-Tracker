@@ -45,8 +45,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-        jwt = authHeader.substring(7);
+
         try {
+            jwt = authHeader.substring(7);
             String email = jwtService.extractUsername(jwt);
             logger.info("email---------- = {}", email);
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -70,6 +71,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             logger.error("Expired JWT token: {}", e.getMessage());
             sendErrorResponse(response, HttpStatus.UNAUTHORIZED, e.getMessage());
             return;
+        }
+        catch (IndexOutOfBoundsException e) {
+            logger.error("No JWT Token provided");
+            sendErrorResponse(response, HttpStatus.BAD_REQUEST, "No token found in auth header");
         }
     }
 

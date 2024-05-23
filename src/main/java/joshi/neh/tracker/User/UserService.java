@@ -1,5 +1,6 @@
 package joshi.neh.tracker.User;
 
+import joshi.neh.tracker.Application.ApplicationDto;
 import joshi.neh.tracker.User.dto.UserDto;
 import joshi.neh.tracker.User.dto.UserResponseDto;
 import joshi.neh.tracker.config.JwtService;
@@ -32,6 +33,7 @@ public class UserService {
 
     @Autowired
     private JwtService jwtService;
+
 
     public User convertToUserEntity(UserDto dto) {
         return User.builder()
@@ -84,4 +86,5 @@ public class UserService {
         );
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
+
 }

@@ -42,5 +42,13 @@ public class ApplicationController {
         return this.applicationService.getAllApplicationsOfUser(userId);
     }
 
+    @PutMapping("/edit/{applicationId}")
+    public ResponseEntity<Application> updateApplicationById(
+            @PathVariable("applicationId") Long applicationId,
+            @RequestBody ApplicationDto dto
+    ) {
+        return this.applicationService.updateApplicationById(applicationId, dto);
+    }
+
 
 }

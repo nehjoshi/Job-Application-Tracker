@@ -11,6 +11,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,7 +29,6 @@ public class ApplicationService {
 
     @Autowired
     private UserService userService;
-
 
     private static final Logger logger = LoggerFactory.getLogger(ApplicationService.class);
 
@@ -61,11 +62,19 @@ public class ApplicationService {
     }
 
     @Transactional
-    public ResponseEntity<?> getAllApplicationsOfUser(UUID id) {
+    public ResponseEntity<?> getAllApplicationsOfUser() {
+        //Create pageable
         Pageable query50Applications = PageRequest.of(0,50, Sort.by("date_applied").reverse());
-        logger.info("Request received in application service!!!");
-        List<Application> applications = this.applicationRepository.findAllApplicationsOfUser(id, query50Applications).getContent();
-        logger.info("FOUND ALL APPLICATIONS");
+
+        //Get user details
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String email = userDetails.getUsername();
+        UUID userId = userService.findByEmail(email).getUserId();
+
+        //Get applications of the user
+        List<Application> applications = this.applicationRepository.findAllApplicationsOfUser(userId, query50Applications).getContent();
+
+        //Return
         if (applications.isEmpty()){
             return new ResponseEntity<>("No applications yet. Start applying now!", HttpStatus.OK);
         }

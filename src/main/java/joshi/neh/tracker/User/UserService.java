@@ -49,6 +49,9 @@ public class UserService {
     public User findById(UUID id) {
         return this.userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User with given ID not found"));
     }
+    public User findByEmail(String email) {
+        return this.userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User with given email not found"));
+    }
 
     public ResponseEntity<UserResponseDto> saveUser(UserDto userDto) {
         Optional<User> userWithSameEmailExists = userRepository.findByEmail(userDto.email());

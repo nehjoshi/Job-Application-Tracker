@@ -1,6 +1,5 @@
 package joshi.neh.tracker.Application;
 
-import joshi.neh.tracker.User.User;
 import joshi.neh.tracker.User.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -12,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/api/v1/application")
 @Slf4j
 public class ApplicationController {
@@ -32,14 +32,9 @@ public class ApplicationController {
         return this.applicationService.saveApplication(userId, dto);
     }
 
-    @GetMapping("/all/{userId}")
-    public ResponseEntity<?> getAllApplicationsByUserId(
-            @PathVariable("userId") UUID userId
-    ) {
-        //Check if this ID exists, if not it'll raise an exception
-        logger.info("Request received in GET Controller");
-        User user = this.userService.findById(userId);
-        return this.applicationService.getAllApplicationsOfUser(userId);
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllApplicationsByUserId() {
+        return this.applicationService.getAllApplicationsOfUser();
     }
 
     @PutMapping("/edit/{applicationId}")

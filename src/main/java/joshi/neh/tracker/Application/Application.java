@@ -31,7 +31,7 @@ public class Application {
     private String status;
     private String additionalInfo;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JsonBackReference
     @JoinColumn(referencedColumnName = "userId", name = "user_id")
     private User user;

@@ -45,5 +45,12 @@ public class ApplicationController {
         return this.applicationService.updateApplicationById(applicationId, dto);
     }
 
+    @DeleteMapping("/{applicationId}")
+    public ResponseEntity<String> deleteApplicationById(
+            @PathVariable("applicationId") Long applicationId
+    ) {
+        return this.applicationService.deleteApplicationById(applicationId);
+    }
+
 
 }

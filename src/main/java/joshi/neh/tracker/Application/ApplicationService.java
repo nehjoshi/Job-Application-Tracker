@@ -99,4 +99,12 @@ public class ApplicationService {
         logger.info(String.valueOf(app));
         return new ResponseEntity<>(app, HttpStatus.CREATED);
     }
+
+    public ResponseEntity<String> deleteApplicationById(Long applicationId) {
+        Optional<Application> app = this.applicationRepository.findById(applicationId);
+        if (app.isEmpty()) throw new ApplicationNotFoundException("Application with given ID not found");
+        Application application = app.get();
+        this.applicationRepository.deleteById(applicationId);
+        return new ResponseEntity<>("Delete successful", HttpStatus.NO_CONTENT);
+    }
 }

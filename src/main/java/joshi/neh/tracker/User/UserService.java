@@ -1,6 +1,5 @@
 package joshi.neh.tracker.User;
 
-import joshi.neh.tracker.Application.ApplicationDto;
 import joshi.neh.tracker.User.dto.UserDto;
 import joshi.neh.tracker.User.dto.UserResponseDto;
 import joshi.neh.tracker.config.JwtService;

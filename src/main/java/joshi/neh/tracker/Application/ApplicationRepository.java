@@ -18,4 +18,6 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
             @Param("userId") UUID userId,
             Pageable pageable
     );
+    @Query(value = "SELECT COUNT(*) FROM application a WHERE a.user_id = :userId", nativeQuery = true)
+    public int getApplicationCountOfUser(@Param("userId") UUID userId);
 }

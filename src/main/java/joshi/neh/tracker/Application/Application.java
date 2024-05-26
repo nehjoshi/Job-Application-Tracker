@@ -28,7 +28,9 @@ public class Application {
     private String positionTitle;
     private String location;
     private String compensation;
-    private String status;
+
+    @Enumerated(value = EnumType.STRING)
+    private ApplicationStatus status;
     private String additionalInfo;
 
     @ManyToOne

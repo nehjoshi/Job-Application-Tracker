@@ -1,5 +1,8 @@
 package joshi.neh.tracker.Application;
 
+import joshi.neh.tracker.Application.dto.AllApplicationsResponseDto;
+import joshi.neh.tracker.Application.dto.ApplicationDto;
+import joshi.neh.tracker.Application.dto.ApplicationResponseDto;
 import joshi.neh.tracker.User.User;
 import joshi.neh.tracker.User.UserService;
 import joshi.neh.tracker.exceptions.ApplicationNotFoundException;
@@ -54,17 +57,22 @@ public class ApplicationService {
 
 
     @Transactional
-    public ResponseEntity<ApplicationResponseDto> saveApplication(UUID id, ApplicationDto dto) {
-        User user = this.userService.findById(id);
+    public ResponseEntity<ApplicationResponseDto> saveApplication(ApplicationDto dto) {
+        //Get user details
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String email = userDetails.getUsername();
+        UUID userId = userService.findByEmail(email).getUserId();
+        User user = this.userService.findById(userId);
+        //Create new application
         Application newApp = convertToEntity(user, dto);
         this.applicationRepository.save(newApp);
         return new ResponseEntity<>(convertToResponse(newApp), HttpStatus.CREATED);
     }
 
     @Transactional
-    public ResponseEntity<?> getAllApplicationsOfUser() {
+    public ResponseEntity<AllApplicationsResponseDto> getAllApplicationsOfUser(int pageNumber) {
         //Create pageable
-        Pageable query50Applications = PageRequest.of(0,50, Sort.by("date_applied").reverse());
+        Pageable query10Applications = PageRequest.of(pageNumber,10, Sort.by("date_applied"));
 
         //Get user details
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -72,13 +80,16 @@ public class ApplicationService {
         UUID userId = userService.findByEmail(email).getUserId();
 
         //Get applications of the user
-        List<Application> applications = this.applicationRepository.findAllApplicationsOfUser(userId, query50Applications).getContent();
+        List<Application> applications = this.applicationRepository.findAllApplicationsOfUser(userId, query10Applications).getContent();
 
+        //Get total application count
+        int count = this.applicationRepository.getApplicationCountOfUser(userId);
         //Return
-        if (applications.isEmpty()){
-            return new ResponseEntity<>("No applications yet. Start applying now!", HttpStatus.OK);
-        }
-        return new ResponseEntity<>(applications, HttpStatus.OK);
+        AllApplicationsResponseDto responseDto = new AllApplicationsResponseDto(
+                count,
+                applications
+        );
+        return new ResponseEntity<>(responseDto, HttpStatus.OK);
 
     }
 

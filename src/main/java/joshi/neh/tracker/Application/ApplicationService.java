@@ -57,7 +57,7 @@ public class ApplicationService {
 
 
     @Transactional
-    public ResponseEntity<ApplicationResponseDto> saveApplication(ApplicationDto dto) {
+    public ResponseEntity<Application> saveApplication(ApplicationDto dto) {
         //Get user details
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String email = userDetails.getUsername();
@@ -66,13 +66,13 @@ public class ApplicationService {
         //Create new application
         Application newApp = convertToEntity(user, dto);
         this.applicationRepository.save(newApp);
-        return new ResponseEntity<>(convertToResponse(newApp), HttpStatus.CREATED);
+        return new ResponseEntity<>(newApp, HttpStatus.CREATED);
     }
 
     @Transactional
     public ResponseEntity<AllApplicationsResponseDto> getAllApplicationsOfUser(int pageNumber) {
         //Create pageable
-        Pageable query10Applications = PageRequest.of(pageNumber,10, Sort.by("date_applied"));
+        Pageable query10Applications = PageRequest.of(pageNumber, 10, Sort.by("date_applied").descending().and(Sort.by("company_name").ascending()));
 
         //Get user details
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();

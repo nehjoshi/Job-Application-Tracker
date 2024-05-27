@@ -26,7 +26,7 @@ public class ApplicationController {
     private static final Logger logger = LoggerFactory.getLogger(ApplicationController.class);
 
     @PostMapping("/new")
-    public ResponseEntity<ApplicationResponseDto> saveApplication(
+    public ResponseEntity<Application> saveApplication(
             @RequestBody ApplicationDto dto
     ) {
         return this.applicationService.saveApplication(dto);

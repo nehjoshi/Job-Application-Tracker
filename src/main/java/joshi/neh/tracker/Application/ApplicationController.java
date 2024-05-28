@@ -2,12 +2,12 @@ package joshi.neh.tracker.Application;
 
 import joshi.neh.tracker.Application.dto.AllApplicationsResponseDto;
 import joshi.neh.tracker.Application.dto.ApplicationDto;
-import joshi.neh.tracker.Application.dto.ApplicationResponseDto;
 import joshi.neh.tracker.User.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,7 +36,8 @@ public class ApplicationController {
     public ResponseEntity<AllApplicationsResponseDto> getAllApplicationsByUserId(
             @PathVariable("pageNumber") int pageNumber
     ) {
-        return this.applicationService.getAllApplicationsOfUser(pageNumber);
+        System.out.println("Application Controller");
+        return new ResponseEntity<>(this.applicationService.getAllApplicationsOfUser(pageNumber), HttpStatus.OK);
     }
 
     @PutMapping("/edit/{applicationId}")

@@ -9,6 +9,8 @@ import joshi.neh.tracker.exceptions.ApplicationNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -57,6 +59,7 @@ public class ApplicationService {
 
 
     @Transactional
+    @CacheEvict(value = "applications", allEntries = true)
     public ResponseEntity<Application> saveApplication(ApplicationDto dto) {
         //Get user details
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -69,8 +72,9 @@ public class ApplicationService {
         return new ResponseEntity<>(newApp, HttpStatus.CREATED);
     }
 
+    @Cacheable("applications")
     @Transactional
-    public ResponseEntity<AllApplicationsResponseDto> getAllApplicationsOfUser(int pageNumber) {
+    public AllApplicationsResponseDto getAllApplicationsOfUser(int pageNumber) {
         //Create pageable
         Pageable query10Applications = PageRequest.of(pageNumber, 10, Sort.by("date_applied").descending().and(Sort.by("company_name").ascending()));
 
@@ -89,11 +93,12 @@ public class ApplicationService {
                 count,
                 applications
         );
-        return new ResponseEntity<>(responseDto, HttpStatus.OK);
+        return responseDto;
 
     }
 
     @Transactional
+    @CacheEvict(value = "applications", allEntries = true)
     public ResponseEntity<Application> updateApplicationById(Long applicationId, ApplicationDto dto) {
         Optional<Application> application = this.applicationRepository.findById(applicationId);
 
@@ -111,6 +116,7 @@ public class ApplicationService {
         return new ResponseEntity<>(app, HttpStatus.CREATED);
     }
 
+    @CacheEvict(value = "applications", allEntries = true)
     public ResponseEntity<String> deleteApplicationById(Long applicationId) {
         Optional<Application> app = this.applicationRepository.findById(applicationId);
         if (app.isEmpty()) throw new ApplicationNotFoundException("Application with given ID not found");

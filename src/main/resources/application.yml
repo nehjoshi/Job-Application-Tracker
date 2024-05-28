@@ -16,8 +16,15 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+  cache:
+    type: redis
+    host: localhost
+    port: 6379
+    redis:
+      time-to-live: 60000
 logging:
   level:
     org.springframework.security: TRACE
+
 SECRETS:
   JWT_SECRET: ${JWT_SECRET}

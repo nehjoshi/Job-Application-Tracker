@@ -58,6 +58,14 @@ public class ApplicationController {
         return this.applicationService.deleteApplicationById(applicationId);
     }
 
+    //Get an application of a user with company name that starts with request param
+    @GetMapping
+    public ResponseEntity<List<Application>> searchApplicationsOfUserByCompanyName(
+            @RequestParam("company-name") String companyName
+    ) {
+        return this.applicationService.searchApplicationsOfUserByCompanyName(companyName);
+    }
+
     //This route will fetch the top 10 most recent applications (not user specific)
     //Will be used for the social page
     @GetMapping("/social")

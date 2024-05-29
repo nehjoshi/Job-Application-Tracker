@@ -129,6 +129,15 @@ public class ApplicationService {
     }
 
 
+    public ResponseEntity<List<Application>> searchApplicationsOfUserByCompanyName(String companyName) {
+        //Get user details
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String email = userDetails.getUsername();
+        UUID userId = userService.findByEmail(email).getUserId();
+        List<Application> apps = applicationRepository.searchUserApplicationsByCompanyName(userId, companyName);
+        return new ResponseEntity<>(apps, HttpStatus.OK);
+    }
+
     public ResponseEntity<List<ApplicationSocialResponseDto>> getMostRecentApplications(int pageNumber) {
         Pageable query10Applications = PageRequest.of(pageNumber, 10);
         List<Application> applications = this.applicationRepository.getRecentApplications(query10Applications).getContent();
@@ -141,4 +150,6 @@ public class ApplicationService {
 
         return new ResponseEntity<>(responseDtos, HttpStatus.OK);
     }
+
+
 }

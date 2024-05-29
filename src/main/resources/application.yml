@@ -26,5 +26,16 @@ logging:
   level:
     org.springframework.security: TRACE
 
+cloud:
+  aws:
+    credentials:
+      accessKey: ${S3_ACCESS_KEY}
+      secretKey: ${S3_SECRET_KEY}
+    region:
+      static: us-east-2
+    s3:
+      bucket:
+        name: ${S3_BUCKET_NAME}
+
 SECRETS:
   JWT_SECRET: ${JWT_SECRET}

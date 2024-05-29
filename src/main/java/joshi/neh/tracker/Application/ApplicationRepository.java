@@ -31,4 +31,16 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     public Page<Application> getRecentApplications(
             Pageable pageable
     );
+
+    @Query(value = "SELECT * " +
+            "FROM application a " +
+            "WHERE a.user_id = :userId " +
+            "AND a.company_name ILIKE CONCAT(:companyName, '%') " +
+            "ORDER BY a.company_name",
+    nativeQuery = true)
+    public List<Application> searchUserApplicationsByCompanyName(
+            @Param("userId") UUID userId,
+            @Param("companyName") String companyName
+    );
+
 }

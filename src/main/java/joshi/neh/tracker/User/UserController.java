@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @CrossOrigin
@@ -29,6 +30,12 @@ public class UserController {
     @PostMapping("/auth/login")
     public ResponseEntity<UserResponseDto> login(@RequestBody UserDto userDto) throws IncorrectCredentialsException {
         return this.userService.login(userDto);
+    }
+    @PostMapping("/profile-picture")
+    public ResponseEntity<String> uploadProfilePicture (
+            @RequestParam("file") MultipartFile file
+    ) {
+        return userService.uploadProfilePicture(file);
     }
 
     //A route to just check if user is authenticated

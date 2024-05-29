@@ -3,6 +3,7 @@ package joshi.neh.tracker.User;
 import joshi.neh.tracker.User.dto.UserDto;
 import joshi.neh.tracker.User.dto.UserResponseDto;
 import joshi.neh.tracker.config.JwtService;
+import joshi.neh.tracker.config.S3Service;
 import joshi.neh.tracker.exceptions.EmailAlreadyExistsException;
 import joshi.neh.tracker.exceptions.IncorrectCredentialsException;
 import joshi.neh.tracker.exceptions.UserNotFoundException;
@@ -12,9 +13,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.net.URL;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -32,6 +38,9 @@ public class UserService {
 
     @Autowired
     private JwtService jwtService;
+
+    @Autowired
+    private S3Service s3Service;
 
 
     public User convertToUserEntity(UserDto dto) {
@@ -89,4 +98,18 @@ public class UserService {
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 
+    public ResponseEntity<String> uploadProfilePicture(MultipartFile file) {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String email = userDetails.getUsername();
+        User user = this.findByEmail(email);
+        try {
+            URL url = s3Service.uploadFile(file);
+            user.setProfilePictureUrl(url.toString());
+            userRepository.save(user);
+            return new ResponseEntity<>(url.toString(), HttpStatus.CREATED);
+        }
+        catch (IOException e) {
+            return ResponseEntity.status(500).body("Error uploading file: " + e.getMessage());
+        }
+    }
 }

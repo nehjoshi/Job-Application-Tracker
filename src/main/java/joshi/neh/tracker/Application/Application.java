@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Data
@@ -24,7 +24,7 @@ public class Application implements Serializable{
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long applicationId;
     @Column(nullable = false)
-    private LocalDate dateApplied;
+    private LocalDateTime dateApplied;
     @Column(nullable = false)
     private String companyName;
     @Column(nullable = false)

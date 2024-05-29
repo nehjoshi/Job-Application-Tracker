@@ -2,6 +2,7 @@ package joshi.neh.tracker.Application;
 
 import joshi.neh.tracker.Application.dto.AllApplicationsResponseDto;
 import joshi.neh.tracker.Application.dto.ApplicationDto;
+import joshi.neh.tracker.Application.dto.ApplicationSocialResponseDto;
 import joshi.neh.tracker.User.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -10,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
@@ -53,6 +56,15 @@ public class ApplicationController {
             @PathVariable("applicationId") Long applicationId
     ) {
         return this.applicationService.deleteApplicationById(applicationId);
+    }
+
+    //This route will fetch the top 10 most recent applications (not user specific)
+    //Will be used for the social page
+    @GetMapping("/social")
+    public ResponseEntity<List<ApplicationSocialResponseDto>> getMostRecentApplications(
+            @RequestParam("page") int pageNumber
+    ) {
+        return this.applicationService.getMostRecentApplications(pageNumber);
     }
 
 

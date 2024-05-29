@@ -3,6 +3,7 @@ package joshi.neh.tracker.Application;
 import joshi.neh.tracker.Application.dto.AllApplicationsResponseDto;
 import joshi.neh.tracker.Application.dto.ApplicationDto;
 import joshi.neh.tracker.Application.dto.ApplicationResponseDto;
+import joshi.neh.tracker.Application.dto.ApplicationSocialResponseDto;
 import joshi.neh.tracker.User.User;
 import joshi.neh.tracker.User.UserService;
 import joshi.neh.tracker.exceptions.ApplicationNotFoundException;
@@ -22,6 +23,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -45,7 +48,7 @@ public class ApplicationService {
                 .positionTitle(dto.positionTitle())
                 .location(dto.location())
                 .additionalInfo(dto.additionalInfo())
-                .dateApplied(LocalDate.now())
+                .dateApplied(LocalDateTime.now())
                 .user(user)
                 .build();
     }
@@ -123,5 +126,19 @@ public class ApplicationService {
         Application application = app.get();
         this.applicationRepository.deleteById(applicationId);
         return new ResponseEntity<>("Delete successful", HttpStatus.NO_CONTENT);
+    }
+
+
+    public ResponseEntity<List<ApplicationSocialResponseDto>> getMostRecentApplications(int pageNumber) {
+        Pageable query10Applications = PageRequest.of(pageNumber, 10);
+        List<Application> applications = this.applicationRepository.getRecentApplications(query10Applications).getContent();
+        List<ApplicationSocialResponseDto> responseDtos = new ArrayList<>();
+        for (Application application: applications) {
+            String firstName = application.getUser().getFirstName();
+            String lastName = application.getUser().getLastName();
+            responseDtos.add(new ApplicationSocialResponseDto(firstName, lastName, application));
+        }
+
+        return new ResponseEntity<>(responseDtos, HttpStatus.OK);
     }
 }

@@ -8,7 +8,9 @@ import joshi.neh.tracker.exceptions.EmailAlreadyExistsException;
 import joshi.neh.tracker.exceptions.IncorrectCredentialsException;
 import joshi.neh.tracker.exceptions.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -103,13 +105,29 @@ public class UserService {
         String email = userDetails.getUsername();
         User user = this.findByEmail(email);
         try {
-            URL url = s3Service.uploadFile(file);
-            user.setProfilePictureUrl(url.toString());
+            String key = s3Service.uploadFile(file);
+            user.setProfilePictureUrl(key);
             userRepository.save(user);
-            return new ResponseEntity<>(url.toString(), HttpStatus.CREATED);
+            return new ResponseEntity<>(key, HttpStatus.CREATED);
         }
         catch (IOException e) {
             return ResponseEntity.status(500).body("Error uploading file: " + e.getMessage());
         }
+    }
+
+    public ResponseEntity<byte[]> getProfilePicture() {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String email = userDetails.getUsername();
+        User user = this.findByEmail(email);
+        String key = user.getProfilePictureUrl();
+        Optional<byte[]> image = this.s3Service.getImageFromS3(key);
+        if (image.isEmpty()) {
+            throw new UserNotFoundException("Profile picture not found");
+        }
+        byte[] picture = image.get();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentLength(picture.length);
+        headers.setContentType(MediaType.IMAGE_JPEG);
+        return new ResponseEntity<>(picture, headers, HttpStatus.OK);
     }
 }

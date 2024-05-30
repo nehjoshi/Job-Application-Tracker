@@ -8,11 +8,13 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
-import java.net.URL;
+import java.io.InputStream;
 import java.time.Instant;
+import java.util.Optional;
 
 @Service
 public class S3Service {
@@ -33,15 +35,33 @@ public class S3Service {
         this.bucketName = bucketName;
     }
 
-    public URL uploadFile(MultipartFile file) throws IOException {
-        String key = "profile-pictures/"  + Instant.now().toEpochMilli() + "_" + file.getOriginalFilename();
+    public String uploadFile(MultipartFile file) throws IOException {
+        String key = Instant.now().toEpochMilli() + "_" + file.getOriginalFilename();
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucketName)
                 .key(key)
                 .contentType(file.getContentType())
                 .build();
         s3Client.putObject(putObjectRequest, RequestBody.fromBytes(file.getBytes()));
-        return s3Client.utilities().getUrl(b -> b.bucket(bucketName).key(key));
+        return key;
+    }
+
+    public Optional<byte[]> getImageFromS3(String key) {
+        byte[] imageBytes = new byte[0];
+        try {
+            GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(key)
+                    .build();
+            InputStream inputStream = s3Client.getObject(getObjectRequest);
+            imageBytes = inputStream.readAllBytes();
+//            inputStream.close();
+            return Optional.of(imageBytes);
+        }
+        catch (IOException ignored) {
+
+            return Optional.empty();
+        }
     }
 
 

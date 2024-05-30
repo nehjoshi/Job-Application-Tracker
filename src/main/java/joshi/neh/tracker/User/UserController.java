@@ -38,6 +38,11 @@ public class UserController {
         return userService.uploadProfilePicture(file);
     }
 
+    @GetMapping("/profile-picture")
+    public ResponseEntity<byte[]> getProfilePicture() {
+        return this.userService.getProfilePicture();
+    }
+
     //A route to just check if user is authenticated
     @GetMapping("/auth")
     public ResponseEntity<String> checkAuthStatus() {

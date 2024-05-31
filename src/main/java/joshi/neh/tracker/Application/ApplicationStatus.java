@@ -2,6 +2,7 @@ package joshi.neh.tracker.Application;
 
 public enum ApplicationStatus {
     APPLIED("Applied"),
+    CODING_TEST("Coding Test"),
     OFFER("Offer"),
     WAITLISTED("Waitlisted"),
     ROUND_1("Round 1"),

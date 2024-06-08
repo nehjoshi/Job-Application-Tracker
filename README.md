@@ -1,6 +1,5 @@
 # Job Application Tracker
-### A secure, reliable and easy to configure job status tracker API.
-***
+A secure, reliable and easy to configure job status tracker API.
 ## What This Application is About
 This Spring Boot application allows clients to organize job applications in 
 a sorted fashion, optimized for quick retrieval and modification. Furthermore, 

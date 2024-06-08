@@ -4,9 +4,9 @@ spring:
   application:
     name: tracker
   datasource:
-    url: ${DB_URI}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: jdbc:postgresql://localhost:5432/application_tracker_db
+    username: postgres
+    password: PGsang!t234
     driver-class-name: org.postgresql.Driver
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect

@@ -67,10 +67,10 @@ public class UserService {
         Optional<User> userWithSameEmailExists = userRepository.findByEmail(userDto.email());
         if (userWithSameEmailExists.isPresent()) throw new EmailAlreadyExistsException("User with email: " + userDto.email() + " already exists");
         User newUser = convertToUserEntity(userDto);
-        userRepository.save(newUser);
+        User savedUser = userRepository.save(newUser);
         UserResponseDto responseDto = new UserResponseDto(
-                newUser.getUserId(),
-                newUser.getEmail(),
+                savedUser.getUserId(),
+                savedUser.getEmail(),
                 jwtService.generateToken(newUser)
         );
         return new ResponseEntity<>(responseDto, HttpStatus.CREATED);

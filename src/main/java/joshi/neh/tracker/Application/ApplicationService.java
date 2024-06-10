@@ -22,7 +22,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -67,12 +66,11 @@ public class ApplicationService {
         //Get user details
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String email = userDetails.getUsername();
-        UUID userId = userService.findByEmail(email).getUserId();
-        User user = this.userService.findById(userId);
+        User user = userService.findByEmail(email);
         //Create new application
         Application newApp = convertToEntity(user, dto);
-        this.applicationRepository.save(newApp);
-        return new ResponseEntity<>(newApp, HttpStatus.CREATED);
+        Application savedApp = this.applicationRepository.save(newApp);
+        return new ResponseEntity<>(savedApp, HttpStatus.CREATED);
     }
 
     @Cacheable("applications")

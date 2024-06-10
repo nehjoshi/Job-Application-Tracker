@@ -1,8 +1,10 @@
 package joshi.neh.tracker.User;
+
 import joshi.neh.tracker.User.dto.UserDto;
 import joshi.neh.tracker.User.dto.UserResponseDto;
 import joshi.neh.tracker.config.JwtService;
 import joshi.neh.tracker.exceptions.EmailAlreadyExistsException;
+import joshi.neh.tracker.exceptions.IncorrectCredentialsException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,7 +14,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
 import java.util.Optional;
 import java.util.UUID;
 
@@ -40,6 +46,9 @@ class UserServiceTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private AuthenticationManager authenticationManager;
 
     @BeforeEach
     public void setup() {
@@ -95,6 +104,42 @@ class UserServiceTest {
         );
 
         assertEquals("User with email: john.doe@example.com already exists", exception.getMessage());
+    }
+
+    @Test
+    public void UserService_Login_ReturnsUserResponseDtoOnSuccess() {
+        UserDto userDto = this.userDto;
+        User user = this.user;
+        when(authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+                userDto.email(),
+                userDto.password()
+        ))).thenReturn(null);
+        when(userRepository.findByEmail(userDto.email()))
+                .thenReturn(Optional.of(user));
+        when(jwtService.generateToken(any(User.class)))
+                .thenReturn("someAccessToken");
+
+        ResponseEntity<UserResponseDto> response = userService.login(userDto);
+
+        assertEquals(response.getStatusCode(), HttpStatus.OK);
+        assertEquals(response.getBody().accessToken(), "someAccessToken");
+        assertEquals(response.getBody().userId(), user.getUserId());
+    }
+
+    @Test
+    public void UserService_Login_ReturnsExceptionIfIncorrectCredentials() {
+        UserDto userDto = this.userDto;
+        User user = this.user;
+        when(authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+                userDto.email(),
+                userDto.password()
+        ))).thenThrow(new BadCredentialsException("Arbitrary message here"));
+
+        IncorrectCredentialsException exception = assertThrows(
+                IncorrectCredentialsException.class,
+                () -> userService.login(userDto)
+        );
+        assertEquals("Incorrect email or password", exception.getMessage());
     }
 
 }

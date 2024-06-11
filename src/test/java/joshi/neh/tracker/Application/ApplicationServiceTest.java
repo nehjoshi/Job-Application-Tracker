@@ -2,12 +2,20 @@ package joshi.neh.tracker.Application;
 
 import joshi.neh.tracker.Application.dto.AllApplicationsResponseDto;
 import joshi.neh.tracker.Application.dto.ApplicationDto;
+import joshi.neh.tracker.Application.dto.ApplicationSocialResponseDto;
 import joshi.neh.tracker.User.User;
 import joshi.neh.tracker.User.UserService;
+import joshi.neh.tracker.exceptions.ApplicationNotFoundException;
+import org.junit.Before;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -22,15 +30,17 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
-@DataJpaTest
+@ExtendWith(MockitoExtension.class)
 class ApplicationServiceTest {
 
     @InjectMocks
@@ -107,14 +117,6 @@ class ApplicationServiceTest {
                 .build();
 
         Pageable pageable = PageRequest.of(0, 10);
-        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                userDetails,
-                null,
-                null
-        );
-        SecurityContextHolder.getContext().setAuthentication(authToken);
-        when(userDetails.getUsername())
-                .thenReturn("john.doe@example.com");
         this.user = savedUser;
         this.application1 = application1;
         this.application1Dto = application1Dto;
@@ -123,8 +125,20 @@ class ApplicationServiceTest {
         this.pageable = pageable;
     }
 
+    private void securitySetup() {
+        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                userDetails,
+                null,
+                null
+        );
+        SecurityContextHolder.getContext().setAuthentication(authToken);
+        when(userDetails.getUsername())
+                .thenReturn("john.doe@example.com");
+    }
+
     @Test
     public void ApplicationService_SaveApplication_ReturnsNewApplication() {
+        this.securitySetup();
         ApplicationDto dto = this.application1Dto;
         Application savedApp = this.application1;
         User savedUser = this.user;
@@ -142,11 +156,12 @@ class ApplicationServiceTest {
 
     @Test
     public void ApplicationService_GetAllApplicationsOfUser_ReturnsListOfApplications() {
+        this.securitySetup();
         Pageable pageable = this.pageable;
         User savedUser = this.user;
         List<Application> applicationList = List.of(this.application1, this.application2);
         Page<Application> applicationPage = new PageImpl<>(applicationList, pageable, applicationList.size());
-        when(userService.findByEmail(any(String.class)))
+        when(userService.findByEmail("john.doe@example.com"))
                 .thenReturn(savedUser);
         when(applicationRepository.findAllApplicationsOfUser(any(UUID.class), any(Pageable.class)))
                 .thenReturn(applicationPage);
@@ -162,5 +177,134 @@ class ApplicationServiceTest {
             assertEquals(a.getUser().getUserId(), savedUser.getUserId());
         }
     }
+
+    @Test
+    public void ApplicationService_UpdateApplicationById_ReturnsUpdatedApplicationIfFound() {
+        Long id = 1L;
+        Application savedApplication = this.application1;
+        when(applicationRepository.findById(any(Long.class)))
+                .thenReturn(Optional.of(savedApplication));
+        ApplicationDto updateDto = ApplicationDto.builder()
+                .companyName("Updated")
+                .location("Updated")
+                .additionalInfo("Updated")
+                .compensation("Updated")
+                .positionTitle("Updated")
+                .status(ApplicationStatus.REJECTED)
+                .build();
+        savedApplication.setPositionTitle("Updated");
+        savedApplication.setCompanyName("Updated");
+        savedApplication.setLocation("Updated");
+        savedApplication.setCompensation("Updated");
+        savedApplication.setAdditionalInfo("Updated");
+        savedApplication.setStatus(ApplicationStatus.REJECTED);
+        when(applicationRepository.save(any(Application.class)))
+                .thenReturn(savedApplication);
+
+        ResponseEntity<Application> response = applicationService.updateApplicationById(id, updateDto);
+
+        assertNotNull(response.getBody());
+        assertEquals(response.getStatusCode(), HttpStatus.CREATED);
+        assertEquals(response.getBody().getApplicationId(), id);
+        assertEquals(response.getBody().getCompanyName(), updateDto.companyName());
+        assertEquals(response.getBody().getAdditionalInfo(), updateDto.additionalInfo());
+        assertEquals(response.getBody().getStatus(), updateDto.status());
+        assertEquals(response.getBody().getLocation(), updateDto.location());
+        assertEquals(response.getBody().getCompensation(), updateDto.compensation());
+        assertEquals(response.getBody().getPositionTitle(), updateDto.positionTitle());
+    }
+
+    @Test
+    public void ApplicationService_UpdateApplicationById_ReturnsExceptionIfNotFound() {
+        Long id = 1L;
+        when(applicationRepository.findById(any(Long.class)))
+                .thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(ApplicationNotFoundException.class,
+                () -> applicationService.updateApplicationById(id, this.application1Dto));
+        assertEquals("Application with ID " + id + " not found", exception.getMessage());
+    }
+
+    @Test
+    public void ApplicationService_DeleteApplicationById_ReturnsNoContentIfFound() {
+        Application savedApplication = this.application1;
+        when(applicationRepository.findById(any(Long.class)))
+                .thenReturn(Optional.of(savedApplication));
+        doNothing().when(applicationRepository).deleteById(1L);
+
+        ResponseEntity<String> response = applicationService.deleteApplicationById(1L);
+
+        assertEquals(response.getStatusCode(), HttpStatus.NO_CONTENT);
+        assertEquals(response.getBody(), "Delete successful");
+        Mockito.verify(applicationRepository, Mockito.times(1)).deleteById(1L);
+        Mockito.verify(applicationRepository, Mockito.times(1)).findById(1L);
+    }
+
+    @Test
+    public void ApplicationService_DeleteApplicationById_ReturnsExceptionIfNotFound() {
+        when(applicationRepository.findById(any(Long.class)))
+                .thenReturn(Optional.empty());
+        Exception exception = assertThrows(
+                ApplicationNotFoundException.class,
+                () -> applicationService.deleteApplicationById(1L)
+        );
+        assertEquals(exception.getMessage(), "Application with given ID not found");
+    }
+
+    @Test
+    public void ApplicationService_SearchApplicationsByCompanyName_ReturnsListOfMatchingApplicationsIfFound() {
+        this.securitySetup();
+        User savedUser = this.user;
+        String nameToSearch = "test";
+        List<Application> applicationList = List.of(this.application1, this.application2);
+        when(userService.findByEmail("john.doe@example.com"))
+                .thenReturn(savedUser);
+        when(applicationRepository.searchUserApplicationsByCompanyName(any(UUID.class), any(String.class)))
+                .thenReturn(applicationList);
+
+        ResponseEntity<List<Application>> response = applicationService.searchApplicationsOfUserByCompanyName(nameToSearch);
+
+        assertEquals(response.getStatusCode(), HttpStatus.OK);
+        for (Application a: response.getBody()) {
+            assertTrue(a.getCompanyName().toLowerCase().startsWith(nameToSearch));
+        }
+    }
+
+    @Test
+    public void ApplicationService_SearchApplicationsByCompanyName_ReturnsEmptyListIfNoneFound() {
+        this.securitySetup();
+        User savedUser = this.user;
+        String nameToSearch = "#8djm";
+        String email = "john.doe@example.com";
+        when(userService.findByEmail(email))
+                .thenReturn(savedUser);
+        when(applicationRepository.searchUserApplicationsByCompanyName(any(UUID.class), any(String.class)))
+                .thenReturn(new ArrayList<>());
+
+        ResponseEntity<List<Application>> response = applicationService.searchApplicationsOfUserByCompanyName(nameToSearch);
+
+        assertTrue(response.getBody().isEmpty());
+        assertEquals(response.getStatusCode(), HttpStatus.OK);
+    }
+
+    @Test
+    public void ApplicationService_GetMostRecentApplications_ReturnsListOfApplications() {
+        Pageable pageable = this.pageable;
+        List<Application> applicationList = List.of(this.application1, this.application2);
+        Page<Application> applicationPage = new PageImpl<>(applicationList, pageable, applicationList.size());
+        when(applicationRepository.getRecentApplications(any(Pageable.class)))
+                .thenReturn(applicationPage);
+
+        ResponseEntity<List<ApplicationSocialResponseDto>> response = applicationService.getMostRecentApplications(0);
+
+        assertEquals(response.getStatusCode(), HttpStatus.OK);
+        for (ApplicationSocialResponseDto a: response.getBody()) {
+            assertNotNull(a.firstName());
+            assertNotNull(a.lastName());
+            assertNotNull(a.application());
+        }
+    }
+
+
 
 }

@@ -97,7 +97,7 @@ public class ApplicationService {
         return responseDto;
 
     }
-
+    //Remove existing cache
     @Transactional
     @CacheEvict(value = "applications", allEntries = true)
     public ResponseEntity<Application> updateApplicationById(Long applicationId, ApplicationDto dto) {

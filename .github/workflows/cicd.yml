@@ -19,9 +19,9 @@ jobs:
         run:
           mvn clean install -DskipTests
       - name: Login to Docker Hub
-        run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD}}\
+        run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD}}
       - name: Build docker image
-        run: docker build -t nehjoshi5/tracker Dockerfile .
+        run: docker build -t nehjoshi5/tracker .
       - name: Publish image to Docker Hub
         run: docker push nehjoshi5/tracker:latest
 

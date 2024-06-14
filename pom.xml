@@ -90,6 +90,7 @@
 	</dependencies>
 
 	<build>
+		<finalName>tracker</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>

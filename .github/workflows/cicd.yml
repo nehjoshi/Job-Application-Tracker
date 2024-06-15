@@ -24,7 +24,7 @@ jobs:
             echo "S3_SECRET_KEY=${{ secrets.S3_SECRET_KEY }}" >> $GITHUB_ENV
             echo "S3_BUCKET_NAME=${{ secrets.S3_BUCKET_NAME }}" >> $GITHUB_ENV
             echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> $GITHUB_ENV
-      - name: Build project and run tests
+      - name: Run tests
         run:
           mvn clean test
       - name: Build project

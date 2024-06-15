@@ -35,7 +35,7 @@ jobs:
         run: docker rm -f tracker-container
       - name: Run Docker Container
         run: |
-          docker run -d -p 8080:8080 --name tracker-container \
+          docker run -d -p 5000:5000 --name tracker-container \
           -e DB_URI=${{ secrets.DB_URI }} \
           -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
           -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \

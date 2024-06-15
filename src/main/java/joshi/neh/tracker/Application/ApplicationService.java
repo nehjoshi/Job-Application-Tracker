@@ -61,7 +61,7 @@ public class ApplicationService {
 
 
     @Transactional
-    @CacheEvict(value = "applications", allEntries = true)
+//    @CacheEvict(value = "applications", allEntries = true)
     public ResponseEntity<Application> saveApplication(ApplicationDto dto) {
         //Get user details
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -73,7 +73,7 @@ public class ApplicationService {
         return new ResponseEntity<>(savedApp, HttpStatus.CREATED);
     }
 
-    @Cacheable("applications")
+//    @Cacheable("applications")
     @Transactional
     public AllApplicationsResponseDto getAllApplicationsOfUser(int pageNumber) {
         //Create pageable
@@ -99,7 +99,7 @@ public class ApplicationService {
     }
     //Remove existing cache
     @Transactional
-    @CacheEvict(value = "applications", allEntries = true)
+//    @CacheEvict(value = "applications", allEntries = true)
     public ResponseEntity<Application> updateApplicationById(Long applicationId, ApplicationDto dto) {
         Optional<Application> application = this.applicationRepository.findById(applicationId);
 
@@ -117,7 +117,7 @@ public class ApplicationService {
         return new ResponseEntity<>(app, HttpStatus.CREATED);
     }
 
-    @CacheEvict(value = "applications", allEntries = true)
+//    @CacheEvict(value = "applications", allEntries = true)
     public ResponseEntity<String> deleteApplicationById(Long applicationId) {
         Optional<Application> app = this.applicationRepository.findById(applicationId);
         if (app.isEmpty()) throw new ApplicationNotFoundException("Application with given ID not found");

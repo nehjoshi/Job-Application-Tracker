@@ -34,5 +34,13 @@ jobs:
       - name: Delete old container
         run: docker rm -f tracker-container
       - name: Run Docker Container
-        run: docker run -d -p 8080:8080 --name tracker-container nehjoshi5/tracker
+        run: docker run -d -p 8080:8080 --name tracker-container \
+            -e DB_URI=${{secrets.DB_URI}} \
+            -e DB_USERNAME=${{secrets.DB_USERNAME}} \
+            -e DB_PASSWORD=${{secrets.DB_PASSWORD}} \
+            -e S3_ACCESS_KEY=${{secrets.S3_ACCESS_KEY}} \
+            -e S3_SECRET_KEY=${{secrets.S3_SECRET_KEY}} \
+            -e S3_BUCKET_NAME=${{secrets.S3_BUCKET_NAME}} \
+            -e JWT_SECRET=${{secrets.JWT_SECRET}} \
+            nehjoshi5/tracker
 

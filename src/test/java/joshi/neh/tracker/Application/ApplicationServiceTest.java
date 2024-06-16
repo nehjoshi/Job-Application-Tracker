@@ -26,6 +26,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -89,6 +90,7 @@ class ApplicationServiceTest {
                 .compensation("$Example.00")
                 .positionTitle("Example title")
                 .additionalInfo("Example additional info")
+                .dateApplied(String.valueOf(LocalDateTime.now()))
                 .location("Example address")
                 .status(ApplicationStatus.APPLIED)
                 .build();
@@ -186,6 +188,7 @@ class ApplicationServiceTest {
                 .additionalInfo("Updated")
                 .compensation("Updated")
                 .positionTitle("Updated")
+                .dateApplied(String.valueOf(LocalDateTime.now().minusDays(5)))
                 .status(ApplicationStatus.REJECTED)
                 .build();
         savedApplication.setPositionTitle("Updated");
@@ -194,6 +197,7 @@ class ApplicationServiceTest {
         savedApplication.setCompensation("Updated");
         savedApplication.setAdditionalInfo("Updated");
         savedApplication.setStatus(ApplicationStatus.REJECTED);
+        savedApplication.setDateApplied(LocalDateTime.now().minusDays(5));
         when(applicationRepository.save(any(Application.class)))
                 .thenReturn(savedApplication);
 
@@ -208,6 +212,10 @@ class ApplicationServiceTest {
         assertEquals(response.getBody().getLocation(), updateDto.location());
         assertEquals(response.getBody().getCompensation(), updateDto.compensation());
         assertEquals(response.getBody().getPositionTitle(), updateDto.positionTitle());
+        assertEquals(
+                response.getBody().getDateApplied(),
+                LocalDateTime.parse(updateDto.dateApplied(), DateTimeFormatter.ISO_DATE_TIME)
+        );
     }
 
     @Test

@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -40,6 +41,9 @@ public class ApplicationService {
     private static final Logger logger = LoggerFactory.getLogger(ApplicationService.class);
 
     public Application convertToEntity(User user, ApplicationDto dto) {
+        String dateString = dto.dateApplied();
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
+        LocalDateTime dateApplied = LocalDateTime.parse(dateString, formatter);
         return Application.builder()
                 .companyName(dto.companyName())
                 .compensation(dto.compensation())
@@ -47,7 +51,7 @@ public class ApplicationService {
                 .positionTitle(dto.positionTitle())
                 .location(dto.location())
                 .additionalInfo(dto.additionalInfo())
-                .dateApplied(LocalDateTime.now())
+                .dateApplied(dateApplied)
                 .user(user)
                 .build();
     }
@@ -111,6 +115,10 @@ public class ApplicationService {
         app.setLocation(dto.location() != null ? dto.location() : app.getLocation());
         app.setCompensation(dto.compensation() != null ? dto.compensation() : app.getCompensation());
         app.setAdditionalInfo(dto.additionalInfo() != null ? dto.additionalInfo() : app.getAdditionalInfo());
+        String dateString = dto.dateApplied();
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
+        LocalDateTime dateApplied = LocalDateTime.parse(dateString, formatter);
+        app.setDateApplied(dateApplied);
         this.applicationRepository.save(app);
         logger.info("UPDATED APPLICATION: ");
         logger.info(String.valueOf(app));

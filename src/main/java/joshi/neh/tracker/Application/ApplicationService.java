@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -40,6 +41,9 @@ public class ApplicationService {
     private static final Logger logger = LoggerFactory.getLogger(ApplicationService.class);
 
     public Application convertToEntity(User user, ApplicationDto dto) {
+        String dateString = dto.dateApplied();
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
+        LocalDateTime dateApplied = LocalDateTime.parse(dateString, formatter);
         return Application.builder()
                 .companyName(dto.companyName())
                 .compensation(dto.compensation())
@@ -47,7 +51,7 @@ public class ApplicationService {
                 .positionTitle(dto.positionTitle())
                 .location(dto.location())
                 .additionalInfo(dto.additionalInfo())
-                .dateApplied(LocalDateTime.now())
+                .dateApplied(dateApplied)
                 .user(user)
                 .build();
     }
@@ -61,7 +65,7 @@ public class ApplicationService {
 
 
     @Transactional
-    @CacheEvict(value = "applications", allEntries = true)
+//    @CacheEvict(value = "applications", allEntries = true)
     public ResponseEntity<Application> saveApplication(ApplicationDto dto) {
         //Get user details
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -73,7 +77,7 @@ public class ApplicationService {
         return new ResponseEntity<>(savedApp, HttpStatus.CREATED);
     }
 
-    @Cacheable("applications")
+//    @Cacheable("applications")
     @Transactional
     public AllApplicationsResponseDto getAllApplicationsOfUser(int pageNumber) {
         //Create pageable
@@ -97,9 +101,9 @@ public class ApplicationService {
         return responseDto;
 
     }
-
+    //Remove existing cache
     @Transactional
-    @CacheEvict(value = "applications", allEntries = true)
+//    @CacheEvict(value = "applications", allEntries = true)
     public ResponseEntity<Application> updateApplicationById(Long applicationId, ApplicationDto dto) {
         Optional<Application> application = this.applicationRepository.findById(applicationId);
 
@@ -111,13 +115,17 @@ public class ApplicationService {
         app.setLocation(dto.location() != null ? dto.location() : app.getLocation());
         app.setCompensation(dto.compensation() != null ? dto.compensation() : app.getCompensation());
         app.setAdditionalInfo(dto.additionalInfo() != null ? dto.additionalInfo() : app.getAdditionalInfo());
+        String dateString = dto.dateApplied();
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
+        LocalDateTime dateApplied = LocalDateTime.parse(dateString, formatter);
+        app.setDateApplied(dateApplied);
         this.applicationRepository.save(app);
         logger.info("UPDATED APPLICATION: ");
         logger.info(String.valueOf(app));
         return new ResponseEntity<>(app, HttpStatus.CREATED);
     }
 
-    @CacheEvict(value = "applications", allEntries = true)
+//    @CacheEvict(value = "applications", allEntries = true)
     public ResponseEntity<String> deleteApplicationById(Long applicationId) {
         Optional<Application> app = this.applicationRepository.findById(applicationId);
         if (app.isEmpty()) throw new ApplicationNotFoundException("Application with given ID not found");

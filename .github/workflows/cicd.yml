@@ -1,0 +1,59 @@
+name: CICD
+
+on:
+  push:
+    branches: [deploy]
+
+jobs:
+  build:
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v3
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - name: Set up environment variables
+        run: |
+            echo "DB_URI=${{ secrets.DB_URI }}" >> $GITHUB_ENV
+            echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> $GITHUB_ENV
+            echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
+            echo "S3_ACCESS_KEY=${{ secrets.S3_ACCESS_KEY }}" >> $GITHUB_ENV
+            echo "S3_SECRET_KEY=${{ secrets.S3_SECRET_KEY }}" >> $GITHUB_ENV
+            echo "S3_BUCKET_NAME=${{ secrets.S3_BUCKET_NAME }}" >> $GITHUB_ENV
+            echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> $GITHUB_ENV
+      - name: Run tests
+        run:
+          mvn clean test
+      - name: Build project
+        run:
+          mvn clean install -DskipTests
+      - name: Login to Docker Hub
+        run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD}}
+      - name: Build docker image
+        run: docker build -t nehjoshi5/tracker .
+      - name: Publish image to Docker Hub
+        run: docker push nehjoshi5/tracker:latest
+
+  deploy:
+    needs: build
+    runs-on: [aws-ec2]
+    steps:
+      - name: Pull Image from Docker Hub
+        run: docker pull nehjoshi5/tracker:latest
+      - name: Delete old container
+        run: docker rm -f tracker-container
+      - name: Run Docker Container
+        run: |
+          docker run -d -p 5000:5000 --name tracker-container \
+          -e DB_URI=${{ secrets.DB_URI }} \
+          -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
+          -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+          -e S3_ACCESS_KEY=${{ secrets.S3_ACCESS_KEY }} \
+          -e S3_SECRET_KEY=${{ secrets.S3_SECRET_KEY }} \
+          -e S3_BUCKET_NAME=${{ secrets.S3_BUCKET_NAME }} \
+          -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
+          nehjoshi5/tracker:latest
+

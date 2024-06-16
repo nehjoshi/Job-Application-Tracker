@@ -6,7 +6,6 @@ import joshi.neh.tracker.Application.dto.ApplicationSocialResponseDto;
 import joshi.neh.tracker.User.User;
 import joshi.neh.tracker.User.UserService;
 import joshi.neh.tracker.exceptions.ApplicationNotFoundException;
-import org.junit.Before;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,9 +13,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -30,6 +26,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -93,6 +90,7 @@ class ApplicationServiceTest {
                 .compensation("$Example.00")
                 .positionTitle("Example title")
                 .additionalInfo("Example additional info")
+                .dateApplied(String.valueOf(LocalDateTime.now()))
                 .location("Example address")
                 .status(ApplicationStatus.APPLIED)
                 .build();
@@ -190,6 +188,7 @@ class ApplicationServiceTest {
                 .additionalInfo("Updated")
                 .compensation("Updated")
                 .positionTitle("Updated")
+                .dateApplied(String.valueOf(LocalDateTime.now().minusDays(5)))
                 .status(ApplicationStatus.REJECTED)
                 .build();
         savedApplication.setPositionTitle("Updated");
@@ -198,6 +197,7 @@ class ApplicationServiceTest {
         savedApplication.setCompensation("Updated");
         savedApplication.setAdditionalInfo("Updated");
         savedApplication.setStatus(ApplicationStatus.REJECTED);
+        savedApplication.setDateApplied(LocalDateTime.now().minusDays(5));
         when(applicationRepository.save(any(Application.class)))
                 .thenReturn(savedApplication);
 
@@ -212,6 +212,10 @@ class ApplicationServiceTest {
         assertEquals(response.getBody().getLocation(), updateDto.location());
         assertEquals(response.getBody().getCompensation(), updateDto.compensation());
         assertEquals(response.getBody().getPositionTitle(), updateDto.positionTitle());
+        assertEquals(
+                response.getBody().getDateApplied(),
+                LocalDateTime.parse(updateDto.dateApplied(), DateTimeFormatter.ISO_DATE_TIME)
+        );
     }
 
     @Test

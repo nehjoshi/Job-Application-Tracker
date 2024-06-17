@@ -80,6 +80,7 @@ class ApplicationRepositoryTest {
     public void ApplicationRepository_GetRecentApplications_ReturnOrderedByDateApplications(){
         Application application1 = this.application1;
         Application application2 = this.application2;
+        application2.setStatus(ApplicationStatus.APPLIED);
         Pageable pageable = this.pageable;
         applicationRepository.save(application1);
         applicationRepository.save(application2);

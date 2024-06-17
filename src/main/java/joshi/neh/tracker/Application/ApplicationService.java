@@ -1,9 +1,6 @@
 package joshi.neh.tracker.Application;
 
-import joshi.neh.tracker.Application.dto.AllApplicationsResponseDto;
-import joshi.neh.tracker.Application.dto.ApplicationDto;
-import joshi.neh.tracker.Application.dto.ApplicationResponseDto;
-import joshi.neh.tracker.Application.dto.ApplicationSocialResponseDto;
+import joshi.neh.tracker.Application.dto.*;
 import joshi.neh.tracker.User.User;
 import joshi.neh.tracker.User.UserService;
 import joshi.neh.tracker.exceptions.ApplicationNotFoundException;
@@ -24,10 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class ApplicationService {
@@ -153,9 +147,36 @@ public class ApplicationService {
             String lastName = application.getUser().getLastName();
             responseDtos.add(new ApplicationSocialResponseDto(firstName, lastName, application));
         }
-
         return new ResponseEntity<>(responseDtos, HttpStatus.OK);
     }
 
+//    public ResponseEntity
+    public ResponseEntity<ApplicationStatisticsResponseDto> getApplicationStatistics() {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String email = userDetails.getUsername();
+        UUID userId = userService.findByEmail(email).getUserId();
+
+        int count = applicationRepository.getApplicationCountOfUser(userId);
+        int offerCount = applicationRepository.getApplicationCountWhereStatusOffer(userId);
+        int appliedCount = applicationRepository.getApplicationCountWhereStatusApplied(userId);
+        int rejectedCount = applicationRepository.getApplicationCountWhereStatusRejected(userId);
+        int stageCount = count - (appliedCount + rejectedCount + offerCount);
+        List<Object[]> topLocationsObject = applicationRepository.getTopLocations(userId);
+        Map<String, Integer> topLocations = new HashMap<>();
+        for (Object[] result : topLocationsObject) {
+            String location = (String) result[0];
+            int locationCount = ((Number) result[1]).intValue();
+            topLocations.put(location, locationCount);
+        }
+        ApplicationStatisticsResponseDto responseDto = ApplicationStatisticsResponseDto.builder()
+                .appliedCount(appliedCount)
+                .totalCount(count)
+                .topLocations(topLocations)
+                .offerCount(offerCount)
+                .rejectedCount(rejectedCount)
+                .stageCount(stageCount)
+                .build();
+        return new ResponseEntity<>(responseDto, HttpStatus.OK);
+    }
 
 }

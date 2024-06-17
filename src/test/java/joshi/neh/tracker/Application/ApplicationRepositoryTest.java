@@ -10,9 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -46,7 +44,7 @@ class ApplicationRepositoryTest {
                 .positionTitle("Example title")
                 .additionalInfo("Example additional info")
                 .dateApplied(LocalDateTime.now())
-                .location("Example address")
+                .location("New York")
                 .status(ApplicationStatus.APPLIED)
                 .user(user)
                 .build();
@@ -56,8 +54,8 @@ class ApplicationRepositoryTest {
                 .positionTitle("Example title 2")
                 .additionalInfo("Example additional info 2")
                 .dateApplied(LocalDateTime.now().minusDays(2))
-                .location("Example address 2")
-                .status(ApplicationStatus.APPLIED)
+                .location("New York")
+                .status(ApplicationStatus.OFFER)
                 .user(user)
                 .build();
         Pageable pageable = PageRequest.of(0, 10);
@@ -201,5 +199,67 @@ class ApplicationRepositoryTest {
         Optional<Application> deletedApplication = applicationRepository.findById(id);
 
         assertTrue(deletedApplication.isEmpty());
+    }
+
+    @Test
+    public void ApplicationRepository_getCountWhereStatusApplied_ReturnsCount() {
+        Application application1 = this.application1;
+        Application application2 = this.application2;
+        applicationRepository.save(application1);
+        applicationRepository.save(application2);
+        UUID id = this.user.getUserId();
+        int count = applicationRepository.getApplicationCountWhereStatusApplied(id);
+        assertEquals(count, 1);
+    }
+
+    @Test
+    public void ApplicationRepository_getCountWhereStatusOffer_ReturnsCount() {
+        Application application1 = this.application1;
+        Application application2 = this.application2;
+        applicationRepository.save(application1);
+        applicationRepository.save(application2);
+        UUID id = this.user.getUserId();
+        int count = applicationRepository.getApplicationCountWhereStatusOffer(id);
+        assertEquals(count, 1);
+    }
+
+    @Test
+    public void ApplicationRepository_getCountWhereStatusRejected_ReturnsCount() {
+        Application application1 = this.application1;
+        Application application2 = this.application2;
+        applicationRepository.save(application1);
+        applicationRepository.save(application2);
+        UUID id = this.user.getUserId();
+        int count = applicationRepository.getApplicationCountWhereStatusRejected(id);
+        assertEquals(count, 0);
+    }
+
+    @Test
+    public void ApplicationRepository_getTopLocations_ReturnsTopLocations() {
+        Application application1 = this.application1;
+        Application application2 = this.application2;
+        Application application3 = Application.builder()
+                .companyName("Test Company 3")
+                .compensation("$Example.00 3")
+                .positionTitle("Example title 3")
+                .additionalInfo("Example additional info 3")
+                .dateApplied(LocalDateTime.now().minusDays(2))
+                .location("San Francisco")
+                .status(ApplicationStatus.OFFER)
+                .user(this.user)
+                .build();
+        applicationRepository.save(application1);
+        applicationRepository.save(application2);
+        applicationRepository.save(application3);
+        UUID id = this.user.getUserId();
+
+        List<Object[]> topLocationObj = applicationRepository.getTopLocations(id);
+
+        Map<String, Integer> topLocations = new HashMap<>();
+        for (Object[] l: topLocationObj) {
+            topLocations.put((String) l[0], ((Number) l[1]).intValue());
+        }
+        assertEquals(topLocations.get("New York"), 2);
+        assertEquals(topLocations.get("San Francisco"), 1);
     }
 }

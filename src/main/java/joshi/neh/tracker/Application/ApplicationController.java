@@ -3,6 +3,7 @@ package joshi.neh.tracker.Application;
 import joshi.neh.tracker.Application.dto.AllApplicationsResponseDto;
 import joshi.neh.tracker.Application.dto.ApplicationDto;
 import joshi.neh.tracker.Application.dto.ApplicationSocialResponseDto;
+import joshi.neh.tracker.Application.dto.ApplicationStatisticsResponseDto;
 import joshi.neh.tracker.User.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -75,5 +76,9 @@ public class ApplicationController {
         return this.applicationService.getMostRecentApplications(pageNumber);
     }
 
+    @GetMapping("/statistics")
+    public ResponseEntity<ApplicationStatisticsResponseDto> getAppStatistics() {
+        return this.applicationService.getApplicationStatistics();
+    }
 
 }

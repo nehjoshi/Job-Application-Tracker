@@ -3,6 +3,7 @@ package joshi.neh.tracker.Application;
 import joshi.neh.tracker.Application.dto.AllApplicationsResponseDto;
 import joshi.neh.tracker.Application.dto.ApplicationDto;
 import joshi.neh.tracker.Application.dto.ApplicationSocialResponseDto;
+import joshi.neh.tracker.Application.dto.ApplicationStatisticsResponseDto;
 import joshi.neh.tracker.User.User;
 import joshi.neh.tracker.User.UserService;
 import joshi.neh.tracker.exceptions.ApplicationNotFoundException;
@@ -27,10 +28,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -309,6 +307,35 @@ class ApplicationServiceTest {
         }
     }
 
+    @Test
+    public void ApplicationService_GetAppStatistics_ReturnsAppStatisticsDto() {
+        this.securitySetup();
+        UUID id = this.user.getUserId();
+        List<Object[]> topLocation = new ArrayList<>(Arrays.asList(
+                new Object[]{"New York", 1},
+                new Object[]{"Remote", 1}
+        ));
+        when(userService.findByEmail(any(String.class)))
+                .thenReturn(this.user);
+        when(applicationRepository.getApplicationCountOfUser(any(UUID.class)))
+                .thenReturn(2);
+        when(applicationRepository.getApplicationCountWhereStatusOffer(any(UUID.class)))
+                .thenReturn(0);
+        when(applicationRepository.getApplicationCountWhereStatusRejected(any(UUID.class)))
+                .thenReturn(0);
+        when(applicationRepository.getApplicationCountWhereStatusApplied(any(UUID.class)))
+                .thenReturn(2);
+        when(applicationRepository.getTopLocations(any(UUID.class)))
+                .thenReturn(topLocation);
+
+        ResponseEntity<ApplicationStatisticsResponseDto> response = applicationService.getApplicationStatistics();
+        Map<String, Integer> topLocationsResponse = response.getBody().topLocations();
+
+        assertEquals(response.getStatusCode(), HttpStatus.OK);
+        assertEquals(topLocationsResponse.get("New York"), 1);
+        assertEquals(topLocationsResponse.get("Remote"), 1);
+
+    }
 
 
 }

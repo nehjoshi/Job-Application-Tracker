@@ -43,4 +43,41 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
             @Param("companyName") String companyName
     );
 
+    @Query(value = "SELECT COUNT(*) " +
+            "FROM application a " +
+            "WHERE a.user_id = :userId " +
+            "AND a.status = 'APPLIED'",
+    nativeQuery = true)
+    public int getApplicationCountWhereStatusApplied(
+            @Param("userId") UUID userId
+    );
+
+    @Query(value = "SELECT COUNT(*) " +
+            "FROM application a " +
+            "WHERE a.user_id = :userId " +
+            "AND a.status = 'REJECTED'",
+            nativeQuery = true)
+    public int getApplicationCountWhereStatusRejected(
+            @Param("userId") UUID userId
+    );
+
+    @Query(value = "SELECT COUNT(*) " +
+            "FROM application a " +
+            "WHERE a.user_id = :userId " +
+            "AND a.status = 'OFFER'",
+          nativeQuery = true)
+    public int getApplicationCountWhereStatusOffer(
+            @Param("userId") UUID userId
+    );
+
+    @Query(value = "SELECT location, COUNT(*) AS location_count " +
+            "FROM application a " +
+            "WHERE a.user_id = :userId " +
+            "GROUP BY location " +
+            "ORDER BY location_count DESC " +
+            "LIMIT 5",
+            nativeQuery = true)
+    public List<Object[]> getTopLocations(
+            @Param("userId") UUID userId
+    );
 }

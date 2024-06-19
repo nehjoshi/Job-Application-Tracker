@@ -45,8 +45,8 @@ public class UserController {
 
     //A route to just check if user is authenticated
     @GetMapping("/auth")
-    public ResponseEntity<String> checkAuthStatus() {
-        return new ResponseEntity<>("You are authenticated", HttpStatus.OK);
+    public ResponseEntity<UserResponseDto> checkAuthStatus() {
+        return this.userService.checkAuthStatus();
     }
 
 }

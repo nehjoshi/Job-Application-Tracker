@@ -71,6 +71,8 @@ public class UserService {
         UserResponseDto responseDto = new UserResponseDto(
                 savedUser.getUserId(),
                 savedUser.getEmail(),
+                savedUser.getFirstName(),
+                savedUser.getLastName(),
                 jwtService.generateToken(newUser)
         );
         return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
@@ -95,6 +97,8 @@ public class UserService {
         UserResponseDto responseDto = new UserResponseDto(
                 user.getUserId(),
                 user.getEmail(),
+                user.getFirstName(),
+                user.getLastName(),
                 accessToken
         );
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
@@ -129,5 +133,19 @@ public class UserService {
         headers.setContentLength(picture.length);
         headers.setContentType(MediaType.IMAGE_JPEG);
         return new ResponseEntity<>(picture, headers, HttpStatus.OK);
+    }
+
+    public ResponseEntity<UserResponseDto> checkAuthStatus() {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String email = userDetails.getUsername();
+        User user = this.findByEmail(email);
+        UserResponseDto responseDto = new UserResponseDto(
+                user.getUserId(),
+                user.getEmail(),
+                user.getFirstName(),
+                user.getLastName(),
+                ""
+        );
+        return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 }

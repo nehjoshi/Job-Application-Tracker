@@ -162,11 +162,13 @@ public class ApplicationService {
         int rejectedCount = applicationRepository.getApplicationCountWhereStatusRejected(userId);
         int stageCount = count - (appliedCount + rejectedCount + offerCount);
         List<Object[]> topLocationsObject = applicationRepository.getTopLocations(userId);
-        Map<String, Integer> topLocations = new HashMap<>();
+        List<Map<String, Integer>> topLocations = new ArrayList<>();
         for (Object[] result : topLocationsObject) {
             String location = (String) result[0];
             int locationCount = ((Number) result[1]).intValue();
-            topLocations.put(location, locationCount);
+            Map<String, Integer> entry = new HashMap<>();
+            entry.put(location, locationCount);
+            topLocations.add(entry);
         }
         ApplicationStatisticsResponseDto responseDto = ApplicationStatisticsResponseDto.builder()
                 .appliedCount(appliedCount)

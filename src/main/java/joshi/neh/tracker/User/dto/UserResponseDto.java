@@ -8,6 +8,8 @@ import java.util.UUID;
 public record UserResponseDto (
         UUID userId,
         String email,
+        String firstName,
+        String lastName,
         String accessToken
 ) {
 }

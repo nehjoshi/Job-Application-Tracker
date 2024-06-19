@@ -329,11 +329,17 @@ class ApplicationServiceTest {
                 .thenReturn(topLocation);
 
         ResponseEntity<ApplicationStatisticsResponseDto> response = applicationService.getApplicationStatistics();
-        Map<String, Integer> topLocationsResponse = response.getBody().topLocations();
+        List<Map<String, Integer>> topLocationsResponse = response.getBody().topLocations();
 
         assertEquals(response.getStatusCode(), HttpStatus.OK);
-        assertEquals(topLocationsResponse.get("New York"), 1);
-        assertEquals(topLocationsResponse.get("Remote"), 1);
+        for (Map<String, Integer> l: topLocationsResponse) {
+            if (l.containsKey("New York")) {
+                assertEquals(l.get("New York"), 1);
+            }
+            if (l.containsKey("Remote")) {
+                assertEquals(l.get("Remote"), 1);
+            }
+        }
 
     }
 

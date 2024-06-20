@@ -8,6 +8,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import java.util.UUID;
@@ -79,5 +82,17 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
             nativeQuery = true)
     public List<Object[]> getTopLocations(
             @Param("userId") UUID userId
+    );
+
+    @Query(value = "SELECT DATE(date_applied) as date, COUNT(*) as count " +
+            "FROM application a " +
+            "WHERE a.user_id = :userId " +
+            "AND date_applied >= :date " +
+            "GROUP BY DATE(date_applied) " +
+            "ORDER BY DATE(date_applied)",
+    nativeQuery = true)
+    public List<Object[]> getCountApplications5Days(
+            @Param("userId") UUID userId,
+            @Param("date") LocalDate date
     );
 }

@@ -18,7 +18,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import software.amazon.awssdk.services.s3.endpoints.internal.Value;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -160,8 +162,10 @@ public class ApplicationService {
         int offerCount = applicationRepository.getApplicationCountWhereStatusOffer(userId);
         int appliedCount = applicationRepository.getApplicationCountWhereStatusApplied(userId);
         int rejectedCount = applicationRepository.getApplicationCountWhereStatusRejected(userId);
+        LocalDate startDate = LocalDate.now().minusDays(4);
         int stageCount = count - (appliedCount + rejectedCount + offerCount);
         List<Object[]> topLocationsObject = applicationRepository.getTopLocations(userId);
+        List<Object[]> dateAppCounts = applicationRepository.getCountApplications5Days(userId, startDate);
         List<Map<String, Integer>> topLocations = new ArrayList<>();
         for (Object[] result : topLocationsObject) {
             String location = (String) result[0];
@@ -170,6 +174,15 @@ public class ApplicationService {
             entry.put(location, locationCount);
             topLocations.add(entry);
         }
+        List<Map<LocalDate, Integer>> fiveDayAppCount = new ArrayList<>();
+        for (Object[] o: dateAppCounts) {
+            LocalDate date = ((java.sql.Date) o[0]).toLocalDate();
+            int dateCount = ((Number) o[1]).intValue();
+            Map<LocalDate, Integer> entry = new HashMap<>();
+            entry.put(date, dateCount);
+            fiveDayAppCount.add(entry);
+        }
+        System.out.println(fiveDayAppCount);
         ApplicationStatisticsResponseDto responseDto = ApplicationStatisticsResponseDto.builder()
                 .appliedCount(appliedCount)
                 .totalCount(count)
@@ -177,6 +190,7 @@ public class ApplicationService {
                 .offerCount(offerCount)
                 .rejectedCount(rejectedCount)
                 .stageCount(stageCount)
+                .fiveDayAppCount(fiveDayAppCount)
                 .build();
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }

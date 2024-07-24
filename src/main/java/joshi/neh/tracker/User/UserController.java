@@ -35,7 +35,7 @@ public class UserController {
     public ResponseEntity<String> uploadProfilePicture (
             @RequestParam("file") MultipartFile file
     ) {
-        return userService.uploadProfilePicture(file);
+        return userService.uploadProfilePicture(file); //Route for uploading profile picture
     }
 
     @GetMapping("/profile-picture")

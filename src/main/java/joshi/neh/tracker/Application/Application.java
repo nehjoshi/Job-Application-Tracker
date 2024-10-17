@@ -21,7 +21,8 @@ public class Application implements Serializable{
     @Serial
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "application_seq")
+    @SequenceGenerator(name = "application_seq", sequenceName = "application_id_seq", allocationSize = 1)
     private Long applicationId;
     @Column(nullable = false)
     private LocalDateTime dateApplied;

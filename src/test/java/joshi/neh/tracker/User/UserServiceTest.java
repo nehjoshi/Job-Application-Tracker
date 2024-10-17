@@ -128,6 +128,7 @@ class UserServiceTest {
 
     @Test
     public void UserService_Login_ReturnsExceptionIfIncorrectCredentials() {
+        //Checking for incorrect credentials
         UserDto userDto = this.userDto;
         User user = this.user;
         when(authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(

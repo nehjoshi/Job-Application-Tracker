@@ -164,7 +164,7 @@ class ApplicationServiceTest {
         when(applicationRepository.getApplicationCountOfUser(any(UUID.class)))
                 .thenReturn(2);
 
-        AllApplicationsResponseDto response = applicationService.getAllApplicationsOfUser(0);
+        AllApplicationsResponseDto response = applicationService.getAllApplicationsOfUser(0, 10);
 
         assertNotNull(response.applications());
         assertEquals(response.count(), 2);

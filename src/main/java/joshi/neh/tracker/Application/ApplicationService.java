@@ -75,9 +75,9 @@ public class ApplicationService {
 
 //    @Cacheable("applications")
     @Transactional
-    public AllApplicationsResponseDto getAllApplicationsOfUser(int pageNumber) {
+    public AllApplicationsResponseDto getAllApplicationsOfUser(int pageNumber, int pageSize) {
         //Create pageable
-        Pageable query10Applications = PageRequest.of(pageNumber, 10, Sort.by("date_applied").descending().and(Sort.by("company_name").ascending()));
+        Pageable queryApplications = PageRequest.of(pageNumber, pageSize, Sort.by("date_applied").descending().and(Sort.by("company_name").ascending()));
 
         //Get user details
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -85,7 +85,7 @@ public class ApplicationService {
         UUID userId = userService.findByEmail(email).getUserId();
 
         //Get applications of the user
-        List<Application> applications = this.applicationRepository.findAllApplicationsOfUser(userId, query10Applications).getContent();
+        List<Application> applications = this.applicationRepository.findAllApplicationsOfUser(userId, queryApplications).getContent();
 
         //Get total application count
         int count = this.applicationRepository.getApplicationCountOfUser(userId);

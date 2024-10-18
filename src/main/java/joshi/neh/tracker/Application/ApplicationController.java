@@ -38,10 +38,11 @@ public class ApplicationController {
 
     @GetMapping("/all/{pageNumber}")
     public ResponseEntity<AllApplicationsResponseDto> getAllApplicationsByUserId(
-            @PathVariable("pageNumber") int pageNumber
+            @PathVariable("pageNumber") int pageNumber,
+            @RequestParam(value = "pageSize", required = false, defaultValue = "10") int pageSize
     ) {
         System.out.println("Application Controller");
-        return new ResponseEntity<>(this.applicationService.getAllApplicationsOfUser(pageNumber), HttpStatus.OK);
+        return new ResponseEntity<>(this.applicationService.getAllApplicationsOfUser(pageNumber, pageSize), HttpStatus.OK);
     }
 
     @PutMapping("/edit/{applicationId}")

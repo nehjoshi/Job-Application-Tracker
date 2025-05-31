@@ -1,0 +1,178 @@
+openapi: 3.0.3
+info:
+  title: Job Application Tracker API
+  version: 1.0.0
+  description: >
+    Secure endpoints for managing user profile pictures and job applications.
+    All secured routes require a valid Bearer token in the `Authorization` header.
+
+servers:
+  - url: http://localhost:5000/api/v1
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    UnauthorizedError:
+      description: Missing or invalid JWT token.
+    InternalServerError:
+      description: Server-side processing error.
+    NotFoundError:
+      description: Resource not found.
+    CreatedResponse:
+      description: Resource successfully created.
+    NoContentResponse:
+      description: Resource deleted successfully.
+    OkResponse:
+      description: Successful response.
+
+  requestBodies:
+    ApplicationDto:
+      description: Application DTO containing application data.
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              position:
+                type: string
+              company:
+                type: string
+              status:
+                type: string
+                example: Applied
+              # Add other fields from your ApplicationDto model here
+            required:
+              - position
+              - company
+              - status
+
+paths:
+  /user/profile-picture:
+    post:
+      summary: Upload a profile picture
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Profile picture (max 1MB)
+      responses:
+        '201':
+          $ref: '#/components/responses/CreatedResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    get:
+      summary: Retrieve the user's profile picture
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          $ref: '#/components/responses/OkResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /application/new:
+    post:
+      summary: Create a new job application
+      security:
+        - bearerAuth: []
+      requestBody:
+        $ref: '#/components/requestBodies/ApplicationDto'
+      responses:
+        '201':
+          $ref: '#/components/responses/CreatedResponse'
+
+  /application/all/{pageNumber}:
+    get:
+      summary: Get paginated list of applications
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: pageNumber
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          $ref: '#/components/responses/OkResponse'
+
+  /application/edit/{applicationId}:
+    put:
+      summary: Edit an existing application
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: applicationId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        $ref: '#/components/requestBodies/ApplicationDto'
+      responses:
+        '201':
+          $ref: '#/components/responses/CreatedResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /application/{applicationId}:
+    delete:
+      summary: Delete an application by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: applicationId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          $ref: '#/components/responses/NoContentResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /application:
+    get:
+      summary: Find applications by company name prefix
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: company-name
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/OkResponse'
+
+  /application/social:
+    get:
+      summary: Get recent applications with "Applied" status
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          $ref: '#/components/responses/OkResponse'
